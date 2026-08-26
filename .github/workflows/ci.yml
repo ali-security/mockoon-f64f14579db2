@@ -181,7 +181,9 @@ jobs:
           npm run build:libs
           npm run build:cli
           if [ -n "${{ inputs.test-filter }}" ]; then
-            npm run test:cli -- --grep "${{ inputs.test-filter }}"
+            # lerna 6 does not forward unknown flags to the underlying script,
+            # so run the CLI package's own test script directly
+            (cd packages/cli && npm run test -- --grep "${{ inputs.test-filter }}")
           else
             npm run test:cli
           fi

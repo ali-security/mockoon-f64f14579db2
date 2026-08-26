@@ -7,7 +7,7 @@ import {
 } from '@mockoon/commons-server';
 import { Command, Flags } from '@oclif/core';
 import { red as chalkRed } from 'chalk';
-import { join } from 'path';
+import { join, resolve } from 'path';
 import { format } from 'util';
 import { Config } from '../config';
 import { commonFlags, deprecatedFlags } from '../constants/command.constants';
@@ -74,9 +74,14 @@ export default class Start extends Command {
       }
 
       for (const environmentInfo of parsedEnvironments) {
+        // resolve the environment directory to an absolute path to avoid false
+        // positives when detecting path traversal (null when the environment
+        // was loaded from a URL)
+        const environmentDirname = getDirname(environmentInfo.originalPath);
+
         this.createServer({
           environment: environmentInfo.environment,
-          environmentDir: getDirname(environmentInfo.originalPath) || '',
+          environmentDir: environmentDirname ? resolve(environmentDirname) : '',
           logTransaction: userFlags['log-transaction'],
           fileTransportOptions: userFlags['disable-log-to-file']
             ? null
