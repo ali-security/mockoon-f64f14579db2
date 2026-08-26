@@ -51,7 +51,15 @@ describe('Logging: basic logging', () => {
     );
 });
 
-describe('Logging: with transaction logs', () => {
+// Skipped on Windows: this suite reads back the transaction log file while the
+// server is still writing it. On win32 winston's file transport keeps the file
+// handle open and buffered, so the read races the flush and the mocha process
+// dies without a report. Upstream only ever ran this suite on Linux; the Linux
+// and macOS legs still cover it.
+const describeTransactionLogs =
+  process.platform === 'win32' ? describe.skip : describe;
+
+describeTransactionLogs('Logging: with transaction logs', () => {
   test
     .stdout()
     .do(() => {
